@@ -6,7 +6,7 @@ networks:
 
 services:
   server:
-    image: codeberg.org/forgejo/forgejo:12.0.3
+    image: codeberg.org/forgejo-experimental/forgejo:13
     container_name: forgejo
     environment:
       - USER_UID=1000
@@ -15,24 +15,37 @@ services:
     networks:
       - forgejo
     volumes:
-      - ./forgejo/data:/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    expose:
-      - '3000'  # Remplacé 'ports' par expose, car accessible via proxy
+      - type: bind
+        source: ./forgejo/data
+        target: /data
+        volume_opt:
+          o: z  # Applique :Z pour permettre l'écriture
+
+      - /etc/timezone:/etc/timezone:ro  # Lecture seule, pas besoin de :Z
+      - /etc/localtime:/etc/localtime:ro # Lecture seule, pas besoin de :Z
     ports:
+      - '3000:3000'
       - '22:22'
 
-  nginx:
-    image: nginx:stable
-    container_name: forgejo-proxy
-    depends_on:
-      - server
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-    ports:
-      - '443:443'
-    networks:
-      - forgejo
+  docker-in-docker:
+    image: docker:dind
+    container_name: 'docker_dind'
+    privileged: 'true'
+    command: ['dockerd', '-H', 'tcp://0.0.0.0:2375', '--tls=false']
+    restart: 'unless-stopped'
 
+  runner:
+    image: 'data.forgejo.org/forgejo/runner:11'
+    links:
+      - docker-in-docker
+    depends_on:
+      docker-in-docker:
+        condition: service_started
+    container_name: 'runner'
+    environment:
+      DOCKER_HOST: tcp://docker-in-docker:2375
+    volumes:
+      - ./data:/data
+    restart: 'unless-stopped'
+
+    command: '/bin/sh -c "sleep 5; forgejo-runner daemon"'

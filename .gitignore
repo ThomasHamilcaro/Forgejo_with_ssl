@@ -1,3 +1,4 @@
 *.pem
 forgejo/
 ngix/ssl
+data/
