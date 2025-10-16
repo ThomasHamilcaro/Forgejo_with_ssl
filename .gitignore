@@ -1,4 +1,5 @@
 *.pem
 forgejo/
 ngix/ssl
-data/
+runner/
+dind/
