@@ -6,7 +6,7 @@ networks:
 
 services:
   server:
-    image: codeberg.org/forgejo-experimental/forgejo:13
+    image: codeberg.org/forgejo/forgejo:13.0.2
     container_name: forgejo
     environment:
       - USER_UID=1000
@@ -24,8 +24,9 @@ services:
 
       - /etc/timezone:/etc/timezone:ro  # Lecture seule, pas besoin de :Z
       - /etc/localtime:/etc/localtime:ro # Lecture seule, pas besoin de :Z
-    ports:
+    expose:
       - '3000:3000'
+    ports:
       - '22:22'
 
   docker-in-docker:
@@ -56,3 +57,17 @@ services:
     restart: 'unless-stopped'
 
     command: '/bin/sh -c "sleep 5; forgejo-runner daemon"'
+
+
+  nginx:
+    image: nginx:stable
+    container_name: forgejo-proxy
+    depends_on:
+      - server
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    ports:
+      - '443:443'
+    networks:
+      - forgejo
