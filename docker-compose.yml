@@ -17,7 +17,7 @@ services:
       - forgejo
     volumes:
       - type: bind
-        source: ./forgejo/data
+        source: ./forgejo
         target: /data
         volume_opt:
           o: z  # Applique :Z pour permettre l'écriture
@@ -52,7 +52,7 @@ services:
     environment:
       DOCKER_HOST: tcp://docker-in-docker:2375
     volumes:
-      - ./runner/data:/data
+      - ./runner:/data
     restart: 'unless-stopped'
 
     command: '/bin/sh -c "sleep 5; forgejo-runner daemon"'
