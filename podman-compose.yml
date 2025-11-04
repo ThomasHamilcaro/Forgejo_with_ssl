@@ -12,6 +12,11 @@ services:
       - USER_UID=1000
       - USER_GID=1000
       - GITEA_CUSTOM=/data/gitea/
+      - FORGEJO__database__DB_TYPE=postgres
+      - FORGEJO__database__HOST=db:5432
+      - FORGEJO__database__NAME=forgejo
+      - FORGEJO__database__USER=forgejo
+      - FORGEJO__database__PASSWD=forgejo
     restart: always
     networks:
       - forgejo
@@ -21,13 +26,14 @@ services:
         target: /data
         volume_opt:
           o: z  # Applique :Z pour permettre l'écriture
-
       - /etc/timezone:/etc/timezone:ro  # Lecture seule, pas besoin de :Z
       - /etc/localtime:/etc/localtime:ro # Lecture seule, pas besoin de :Z
     expose:
       - '3000'
     ports:
       - '22:22'
+    depends_on:
+      - db
 
   docker-in-docker:
     image: docker:dind
@@ -58,7 +64,7 @@ services:
       - forgejo
     restart: 'unless-stopped'
 
-    command: '/bin/sh -c "sleep 5; forgejo-runner daemon"'
+    command: '/bin/sh -c "while : ; do sleep 1 ; done ;"'
 
 
   nginx:
@@ -73,3 +79,15 @@ services:
       - '443:443'
     networks:
       - forgejo
+
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      - POSTGRES_USER=forgejo
+      - POSTGRES_PASSWORD=forgejo
+      - POSTGRES_DB=forgejo
+    networks:
+      - forgejo
+    volumes:
+      - ./postgres:/var/lib/postgresql/data

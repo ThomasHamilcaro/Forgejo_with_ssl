@@ -3,3 +3,4 @@ forgejo/
 ngix/ssl
 runner/
 dind/
+postgres/
