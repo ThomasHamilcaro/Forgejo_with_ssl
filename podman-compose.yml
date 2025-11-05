@@ -72,6 +72,7 @@ services:
     container_name: forgejo-proxy
     depends_on:
       - server
+      - mkcert
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
@@ -91,3 +92,19 @@ services:
       - forgejo
     volumes:
       - ./postgres:/var/lib/postgresql/data
+
+
+  mkcert:
+    image: alpine/mkcert
+    container_name: mkcert
+    volumes:
+      - ./mkcert:/root/.local/share/mkcert  # Stocke l'autorité de certification locale
+      - ./nginx/ssl:/ssl                    # Dossier où les certificats seront générés
+    command: >
+      sh -c "
+      mkcert -install &&
+      mkcert -cert-file /ssl/cert.pem -key-file /ssl/key.pem forgejo.local git.forgejo.local localhost 127.0.0.1 ::1 &&
+      chmod 644 /ssl/*.pem
+      "
+    networks:
+      - forgejo
