@@ -39,7 +39,7 @@ services:
     image: docker:dind
     container_name: 'docker_dind'
     privileged: 'true'
-    command: ['dockerd', '-H', 'tcp://0.0.0.0:2375', '--tls=false']
+    command: ['dockerd', '-H', 'tcp://0.0.0.0:2375']
     restart: 'unless-stopped'
     volumes:
       - type: bind
