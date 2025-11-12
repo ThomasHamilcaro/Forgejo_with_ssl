@@ -49,7 +49,7 @@ services:
           o: Z
 
   runner:
-    image: 'data.forgejo.org/forgejo/runner:11'
+    image: 'data.forgejo.org/forgejo/runner:11.3.1'
     links:
       - docker-in-docker
     depends_on:
