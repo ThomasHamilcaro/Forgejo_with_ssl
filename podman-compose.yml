@@ -82,6 +82,7 @@ services:
 
   db:
     image: docker.io/postgres:14
+    container_name: forgejo-database
     restart: always
     environment:
       - POSTGRES_USER=forgejo
